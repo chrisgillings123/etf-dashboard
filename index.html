@@ -9,19 +9,19 @@
   :root{
     --bg:#0f1419; --panel:#171e26; --panel2:#1d2731; --line:#2a3744;
     --txt:#e6edf3; --mut:#8b9aa8; --accent:#4da3ff;
-    --green:#2fbf71; --red:#ff5c5c; --amber:#f0a83a; --teal:#23c6c6; --blue:#4d8bff;
+    --green:#2fbf71; --red:#ff5c5c; --amber:#f0a83a; --teal:#23c6c6;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5}
-  h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.2px}
+  h1{font-size:17px;margin:0;font-weight:650}
   .sub{color:var(--mut);font-size:12px;margin-top:2px}
   .hbtns{display:flex;align-items:center;gap:10px}
   button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
   button:hover{border-color:var(--accent)}
   button.primary{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
-  .wrap{padding:18px 22px;max-width:1500px;margin:0 auto}
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .wrap{padding:18px 22px;max-width:1600px;margin:0 auto}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
   .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
   .kpi .l{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
   .kpi .v{font-size:22px;font-weight:650;margin-top:6px}
@@ -30,7 +30,7 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
   .card h2{font-size:13px;margin:0 0 12px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+  th,td{padding:9px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
   th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--panel)}
   th:first-child,td:first-child,th.l,td.l{text-align:left}
   tbody tr{cursor:pointer}
@@ -39,24 +39,23 @@
   .tkr{font-weight:700}
   .nm{color:var(--mut);font-size:11.5px}
   .pos{color:var(--green)} .neg{color:var(--red)}
-  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.2px}
-  .b-over{background:rgba(255,92,92,.16);color:#ff8585;border:1px solid rgba(255,92,92,.4)}
-  .b-mildover{background:rgba(240,168,58,.14);color:#f6c068;border:1px solid rgba(240,168,58,.4)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
+  .b-cheap{background:rgba(47,191,113,.22);color:#69e6a6;border:1px solid rgba(47,191,113,.5)}
+  .b-under{background:rgba(35,198,198,.16);color:#5fe0e0;border:1px solid rgba(35,198,198,.45)}
   .b-fair{background:rgba(139,154,168,.16);color:#b6c2cd;border:1px solid rgba(139,154,168,.4)}
-  .b-milunder{background:rgba(35,198,198,.14);color:#5fe0e0;border:1px solid rgba(35,198,198,.4)}
-  .b-under{background:rgba(47,191,113,.16);color:#5fe0a0;border:1px solid rgba(47,191,113,.4)}
+  .b-over{background:rgba(240,168,58,.16);color:#f6c068;border:1px solid rgba(240,168,58,.45)}
+  .b-exp{background:rgba(255,92,92,.18);color:#ff8585;border:1px solid rgba(255,92,92,.5)}
   .b-na{background:rgba(139,154,168,.1);color:var(--mut);border:1px solid var(--line)}
-  .rng{position:relative;height:6px;width:78px;background:var(--line);border-radius:3px;display:inline-block;vertical-align:middle}
+  .rng{position:relative;height:6px;width:64px;background:var(--line);border-radius:3px;display:inline-block;vertical-align:middle}
   .rng .dot{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;background:var(--accent);transform:translateX(-50%);border:2px solid var(--panel)}
-  .z{font-variant-numeric:tabular-nums}
   td.num{font-variant-numeric:tabular-nums}
+  .z{font-variant-numeric:tabular-nums;font-size:12px}
   .err{color:var(--red);font-size:11px}
-  /* modal */
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
   .ov.open{display:flex}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(920px,96vw);max-height:92vh;overflow:auto;padding:20px}
   .mhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-  .ranges{display:flex;gap:6px;margin:6px 0 14px}
+  .ranges{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap}
   .ranges button{padding:5px 11px;font-size:12px}
   .ranges button.on{background:var(--accent);color:#06121f;border-color:var(--accent);font-weight:600}
   .mstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px}
@@ -64,7 +63,7 @@
   .mstat .l{color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
   .mstat .v{font-size:17px;font-weight:650;margin-top:3px}
   .x{cursor:pointer;color:var(--mut);font-size:22px;line-height:1;padding:0 4px}
-  .note{color:var(--mut);font-size:11.5px;margin-top:14px;line-height:1.6}
+  .note{color:var(--mut);font-size:11.5px;margin-top:14px;line-height:1.65}
   .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--mut);border-top-color:var(--accent);border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px}
   @keyframes s{to{transform:rotate(360deg)}}
   .loading{padding:60px;text-align:center;color:var(--mut)}
@@ -74,11 +73,11 @@
 <header>
   <div>
     <h1>ETF Valuation Dashboard</h1>
-    <div class="sub" id="sub">Live ASX prices · 12 ETFs · valuation vs 3 / 5 / 10-yr trend</div>
+    <div class="sub">Live ASX prices &middot; valuation = current P/E vs the index's own 3 / 5 / 10-yr history (mean-reversion)</div>
   </div>
   <div class="hbtns">
     <span class="sub" id="asof"></span>
-    <button class="primary" id="refresh" onclick="load()">↻ Refresh</button>
+    <button class="primary" id="refresh" onclick="load()">&#8635; Refresh</button>
   </div>
 </header>
 
@@ -87,18 +86,18 @@
 
   <div class="grid2">
     <div class="card">
-      <h2>Composite valuation (z-score vs own 3/5/10-yr trend)</h2>
+      <h2>Valuation vs own history (z-score, &sigma;) &mdash; &lt;0 cheap &middot; &gt;0 rich</h2>
       <canvas id="valChart" height="150"></canvas>
     </div>
     <div class="card">
-      <h2>Day move (%)</h2>
-      <canvas id="dayChart" height="150"></canvas>
+      <h2>% below all-time high</h2>
+      <canvas id="athChart" height="150"></canvas>
     </div>
   </div>
 
   <div class="card">
-    <h2>Holdings — click a row for price history &amp; detail</h2>
-    <div id="tableWrap"><div class="loading"><span class="spin"></span> Loading live data…</div></div>
+    <h2>Holdings &mdash; click a row for price history &amp; detail</h2>
+    <div id="tableWrap"><div class="loading"><span class="spin"></span> Loading live data&hellip;</div></div>
   </div>
 
   <p class="note" id="methodology"></p>
@@ -111,7 +110,7 @@
         <div style="font-size:18px;font-weight:700" id="mTkr"></div>
         <div class="nm" id="mName"></div>
       </div>
-      <div class="x" onclick="closeModal()">×</div>
+      <div class="x" onclick="closeModal()">&times;</div>
     </div>
     <div class="ranges" id="mRanges"></div>
     <canvas id="detChart" height="120"></canvas>
@@ -120,166 +119,169 @@
 </div>
 
 <script>
-const fmt = (n,d=2)=> n==null||!isFinite(n) ? "—" : Number(n).toLocaleString("en-AU",{minimumFractionDigits:d,maximumFractionDigits:d});
-const sign = (n,d=2)=> n==null||!isFinite(n) ? "—" : (n>=0?"+":"")+fmt(n,d);
-const zfmt = z=> z==null?"—":(z>=0?"+":"")+z.toFixed(2);
-let DATA=[], sortKey="composite", sortDir=-1, valChart, dayChart, detChart;
+const fmt=(n,d=2)=> n==null||!isFinite(n)?"—":Number(n).toLocaleString("en-AU",{minimumFractionDigits:d,maximumFractionDigits:d});
+const sign=(n,d=2)=> n==null||!isFinite(n)?"—":(n>=0?"+":"")+fmt(n,d);
+const zf=z=> z==null||!isFinite(z)?"—":(z>=0?"+":"")+z.toFixed(2)+"σ";
+const GROUP_ORDER=["Broad / Developed","Regional / EM","Thematic / Sector","ESG / Climate","Leveraged"];
+let DATA=[], sortKey="group", sortDir=1, valChart, athChart, detChart;
 
 async function load(){
   document.getElementById("refresh").innerHTML='<span class="spin"></span> Loading';
   try{
-    const r = await fetch("/api/data",{cache:"no-store"});
-    const j = await r.json();
+    const r=await fetch("/api/data",{cache:"no-store"});
+    const j=await r.json();
     if(j.error) throw new Error(j.error);
-    DATA = j.etfs;
-    document.getElementById("asof").textContent = "As of "+new Date(j.asOf).toLocaleString("en-AU");
+    DATA=j.etfs;
+    document.getElementById("asof").textContent="As of "+new Date(j.asOf).toLocaleString("en-AU");
     render();
   }catch(e){
-    document.getElementById("tableWrap").innerHTML='<div class="err" style="padding:20px">Failed to load data: '+e.message+'</div>';
+    document.getElementById("tableWrap").innerHTML='<div class="err" style="padding:20px">Failed to load: '+e.message+'</div>';
   }
   document.getElementById("refresh").innerHTML="↻ Refresh";
 }
+function val(d){ return d.valuation||{}; }
+function zget(d,n){ const v=val(d); return v.zs?v.zs[n]:null; }
 
-function render(){
-  renderKpis(); renderCharts(); renderTable(); renderMethodology();
-}
+function render(){ renderKpis(); renderCharts(); renderTable(); renderMethodology(); }
 
 function renderKpis(){
-  const ok = DATA.filter(d=>!d.error);
-  const over = ok.filter(d=>d.score && (d.score.tone==="over"||d.score.tone==="mildover")).length;
-  const under = ok.filter(d=>d.score && (d.score.tone==="under"||d.score.tone==="milunder")).length;
-  const fair = ok.filter(d=>d.score && d.score.tone==="fair").length;
-  const avgDay = ok.reduce((s,d)=>s+(d.dayChgPct||0),0)/(ok.length||1);
-  const adv = ok.filter(d=>(d.dayChgPct||0)>0).length;
+  const ok=DATA.filter(d=>!d.error);
+  const scored=ok.filter(d=>val(d).composite!=null);
+  const rich=scored.filter(d=>val(d).composite>=1).length;
+  const cheap=scored.filter(d=>val(d).composite<=-1).length;
+  const fair=scored.filter(d=>Math.abs(val(d).composite)<1).length;
+  const avgDay=ok.reduce((s,d)=>s+(d.dayChgPct||0),0)/(ok.length||1);
+  const avgAth=ok.reduce((s,d)=>s+(d.fromAthPct||0),0)/(ok.length||1);
   const k=[
-    ["ETFs tracked", ok.length],
-    ["Avg day move", `<span class="${avgDay>=0?'pos':'neg'}">${sign(avgDay)}%</span>`],
-    ["Advancing / declining", `${adv} / ${ok.length-adv}`],
-    ["Rich (over)", `<span style="color:var(--red)">${over}</span>`],
-    ["Fair", `<span style="color:var(--mut)">${fair}</span>`],
-    ["Cheap (under)", `<span style="color:var(--green)">${under}</span>`],
+    ["ETFs tracked",ok.length],
+    ["Avg day move",'<span class="'+(avgDay>=0?'pos':'neg')+'">'+sign(avgDay)+'%</span>'],
+    ["Avg vs ATH",'<span class="neg">'+sign(avgAth)+'%</span>'],
+    ["Rich vs history",'<span style="color:var(--red)">'+rich+'</span>'],
+    ["Fair",'<span style="color:var(--mut)">'+fair+'</span>'],
+    ["Cheap vs history",'<span style="color:var(--green)">'+cheap+'</span>'],
   ];
-  document.getElementById("kpis").innerHTML = k.map(([l,v])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+  document.getElementById("kpis").innerHTML=k.map(x=>'<div class="kpi"><div class="l">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>').join("");
 }
 
-function barColor(z){ if(z==null)return "#8b9aa8"; if(z>=1)return "#ff5c5c"; if(z>=.4)return "#f0a83a"; if(z<=-1)return "#2fbf71"; if(z<=-.4)return "#23c6c6"; return "#8b9aa8"; }
+function zColor(z){ if(z==null)return "#8b9aa8"; if(z>=2)return "#ff5c5c"; if(z>=1)return "#f0a83a"; if(z<=-2)return "#2fbf71"; if(z<=-1)return "#23c6c6"; return "#8b9aa8"; }
 
 function renderCharts(){
-  const ok = DATA.filter(d=>!d.error);
-  const labels = ok.map(d=>d.ticker.replace(".AX",""));
-  // valuation bar
-  const zv = ok.map(d=>d.composite);
-  if(valChart) valChart.destroy();
-  valChart = new Chart(document.getElementById("valChart"),{
-    type:"bar",
-    data:{labels,datasets:[{data:zv,backgroundColor:zv.map(barColor),borderRadius:4}]},
-    options:baseOpts({suggestedMin:-2,suggestedMax:2,title:"z-score"},(c)=>zfmt(c.raw)+"σ")
-  });
-  // day move bar
-  const dv = ok.map(d=>d.dayChgPct);
-  if(dayChart) dayChart.destroy();
-  dayChart = new Chart(document.getElementById("dayChart"),{
-    type:"bar",
-    data:{labels,datasets:[{data:dv,backgroundColor:dv.map(v=>v>=0?"#2fbf71":"#ff5c5c"),borderRadius:4}]},
-    options:baseOpts({title:"%"},(c)=>sign(c.raw)+"%")
-  });
+  const scored=DATA.filter(d=>!d.error&&val(d).composite!=null);
+  const labels=scored.map(d=>d.ticker.replace(".AX",""));
+  const zv=scored.map(d=>val(d).composite);
+  if(valChart)valChart.destroy();
+  valChart=new Chart(document.getElementById("valChart"),{type:"bar",
+    data:{labels,datasets:[{data:zv,backgroundColor:zv.map(zColor),borderRadius:4}]},
+    options:opts({min:-3,max:3},c=>zf(c.raw))});
+  const ok=DATA.filter(d=>!d.error);
+  const al=ok.map(d=>d.ticker.replace(".AX",""));
+  const av=ok.map(d=>d.fromAthPct);
+  if(athChart)athChart.destroy();
+  athChart=new Chart(document.getElementById("athChart"),{type:"bar",
+    data:{labels:al,datasets:[{data:av,backgroundColor:av.map(v=>v<=-20?"#ff5c5c":v<=-10?"#f0a83a":"#4da3ff"),borderRadius:4}]},
+    options:opts({},c=>sign(c.raw)+"%")});
 }
-function baseOpts(y,tip){
-  return {responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:tip}}},
-    scales:{x:{ticks:{color:"#8b9aa8",font:{size:10}},grid:{display:false}},
-            y:{ticks:{color:"#8b9aa8",font:{size:10}},grid:{color:"#2a3744"},...(y.suggestedMin!=null?{suggestedMin:y.suggestedMin,suggestedMax:y.suggestedMax}:{})}}};
+function opts(y,tip){
+  const ya={ticks:{color:"#8b9aa8",font:{size:10}},grid:{color:"#2a3744"}};
+  if(y.min!=null){ ya.suggestedMin=y.min; ya.suggestedMax=y.max; }
+  return{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:tip}}},
+    scales:{x:{ticks:{color:"#8b9aa8",font:{size:9}},grid:{display:false}}, y:ya}};
 }
 
-const COLS=[
-  ["ticker","Ticker","l"],["index","Index","l"],["price","Price"],["dayChgPct","Day %"],
-  ["rangePos","52-wk range"],["z3","vs 3yr"],["z5","vs 5yr"],["z10","vs 10yr"],
-  ["pe","Idx P/E"],["ps","Idx P/Rev"],["composite","Score"]
-];
-function val(d,k){ if(k==="pe")return d.fundamentals?.pe; if(k==="ps")return d.fundamentals?.ps; return d[k]; }
+const COLS=[["ticker","Ticker","l"],["index","Index","l"],["price","Price"],["dayChgPct","Day %"],
+  ["fromAthPct","vs ATH"],["rangePos","52wk"],["pe","P/E"],["z3","P/E vs 3y"],["z5","vs 5y"],["z10","vs 10y"],["ps","P/Rev"],["composite","Score"]];
 
+function cellVal(d,k){
+  const v=val(d);
+  if(k==="ticker")return d.ticker; if(k==="index")return d.index;
+  if(k==="group")return GROUP_ORDER.indexOf(d.group);
+  if(k==="pe")return v.pe; if(k==="ps")return v.ps; if(k==="composite")return v.composite;
+  if(k==="z3")return zget(d,3); if(k==="z5")return zget(d,5); if(k==="z10")return zget(d,10);
+  return d[k];
+}
 function renderTable(){
   const sorted=[...DATA].sort((a,b)=>{
-    if(a.error) return 1; if(b.error) return -1;
-    let av=val(a,sortKey), bv=val(b,sortKey);
-    av=av==null?-Infinity:av; bv=bv==null?-Infinity:bv;
+    if(a.error)return 1; if(b.error)return -1;
+    if(sortKey==="group"){ const ga=GROUP_ORDER.indexOf(a.group),gb=GROUP_ORDER.indexOf(b.group); if(ga!==gb)return ga-gb;
+      const ca=val(a).composite,cb=val(b).composite; return (cb==null?-99:cb)-(ca==null?-99:ca); }
+    let av=cellVal(a,sortKey),bv=cellVal(b,sortKey);
+    av=(av==null||av==="")?-Infinity:av; bv=(bv==null||bv==="")?-Infinity:bv;
+    if(typeof av==="string")return av.localeCompare(bv)*sortDir;
     return (av<bv?-1:av>bv?1:0)*sortDir;
   });
-  // keep group ordering when sorting by group-neutral default
-  let html='<table><thead><tr>'+COLS.map(c=>`<th class="${c[2]||''}" onclick="setSort('${c[0]}')">${c[1]}${sortKey===c[0]?(sortDir<0?' ▼':' ▲'):''}</th>`).join("")+'</tr></thead><tbody>';
+  let html='<table><thead><tr>'+COLS.map(c=>'<th class="'+(c[2]||'')+'" onclick="setSort(\''+c[0]+'\')">'+c[1]+(sortKey===c[0]?(sortDir<0?' ▼':' ▲'):'')+'</th>').join("")+'</tr></thead><tbody>';
   let grp=null;
   for(const d of sorted){
-    if(sortKey==="composite" && sortDir===-1 && d.group!==grp){ grp=d.group; html+=`<tr class="grp"><td colspan="11">${grp}</td></tr>`; }
-    if(d.error){ html+=`<tr><td class="l"><span class="tkr">${d.ticker.replace(".AX","")}</span><div class="nm">${d.name}</div></td><td class="l err" colspan="10">data unavailable</td></tr>`; continue; }
-    const dc=d.dayChgPct;
-    html+=`<tr onclick="openModal('${d.ticker}')">
-      <td class="l"><span class="tkr">${d.ticker.replace(".AX","")}</span><div class="nm">${d.name}</div></td>
-      <td class="l nm">${d.index}</td>
-      <td class="num">${fmt(d.price)} <span class="nm">${d.currency}</span></td>
-      <td class="num ${dc>=0?'pos':'neg'}">${sign(dc)}%</td>
-      <td>${rangeBar(d)}</td>
-      <td class="num z">${zfmt(d.z3)}</td>
-      <td class="num z">${zfmt(d.z5)}</td>
-      <td class="num z">${zfmt(d.z10)}</td>
-      <td class="num">${fmt(d.fundamentals?.pe,1)}</td>
-      <td class="num">${fmt(d.fundamentals?.ps,2)}</td>
-      <td><span class="badge b-${d.score.tone}">${d.score.label}</span></td>
-    </tr>`;
+    if(sortKey==="group"&&d.group!==grp){grp=d.group;html+='<tr class="grp"><td colspan="12">'+grp+'</td></tr>';}
+    if(d.error){html+='<tr><td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td><td class="l err" colspan="11">data unavailable</td></tr>';continue;}
+    const v=val(d), dc=d.dayChgPct, sc=v.score||{label:"—",tone:"na"};
+    html+='<tr onclick="openModal(\''+d.ticker+'\')">'+
+      '<td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td>'+
+      '<td class="l nm">'+d.index+'</td>'+
+      '<td class="num">'+fmt(d.price)+' <span class="nm">'+(d.currency||"")+'</span></td>'+
+      '<td class="num '+(dc>=0?'pos':'neg')+'">'+sign(dc)+'%</td>'+
+      '<td class="num neg">'+sign(d.fromAthPct)+'%</td>'+
+      '<td>'+rangeBar(d)+'</td>'+
+      '<td class="num">'+fmt(v.pe,1)+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,3))+'">'+zf(zget(d,3))+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,5))+'">'+zf(zget(d,5))+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,10))+'">'+zf(zget(d,10))+'</td>'+
+      '<td class="num">'+fmt(v.ps,2)+'</td>'+
+      '<td><span class="badge b-'+sc.tone+'">'+sc.label+'</span></td>'+
+    '</tr>';
   }
   html+="</tbody></table>";
   document.getElementById("tableWrap").innerHTML=html;
 }
-function rangeBar(d){
-  const p=d.rangePos==null?50:Math.max(0,Math.min(100,d.rangePos));
-  return `<span class="rng" title="Low ${fmt(d.week52Low)} · High ${fmt(d.week52High)}"><span class="dot" style="left:${p}%"></span></span>`;
-}
-function setSort(k){ if(sortKey===k)sortDir*=-1; else {sortKey=k;sortDir=-1;} renderTable(); }
+function rangeBar(d){const p=d.rangePos==null?50:Math.max(0,Math.min(100,d.rangePos));
+  return '<span class="rng" title="Low '+fmt(d.week52Low)+' · High '+fmt(d.week52High)+'"><span class="dot" style="left:'+p+'%"></span></span>';}
+function setSort(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==="ticker"||k==="index"||k==="group")?1:-1;}renderTable();}
 
 function openModal(tkr){
   const d=DATA.find(x=>x.ticker===tkr); if(!d||d.error)return;
-  document.getElementById("mTkr").textContent=tkr.replace(".AX","")+" · "+d.score.label;
+  const v=val(d), sc=v.score||{label:"—"};
+  document.getElementById("mTkr").textContent=tkr.replace(".AX","")+" · "+sc.label;
   document.getElementById("mName").textContent=d.name+"  —  "+d.index;
   document.getElementById("ov").classList.add("open");
-  modalRange="3y"; drawDetail(d); renderRanges(d);
-  document.getElementById("mStats").innerHTML=[
-    ["Price",fmt(d.price)+" "+d.currency],["Day",sign(d.dayChgPct)+"%"],
+  modalRange="3y"; modalETF=d; renderRanges(); drawDetail(d);
+  const per=v.periods||{};
+  const peLine=(n)=> per[n]?"avg "+fmt(per[n].mu,1)+" · "+zf(zget(d,n)):"—";
+  const rowsHtml=[
+    ["Price",fmt(d.price)+" "+(d.currency||"")],["Day",sign(d.dayChgPct)+"%"],["vs ATH",sign(d.fromAthPct)+"%"],
     ["52wk High",fmt(d.week52High)],["52wk Low",fmt(d.week52Low)],
-    ["vs 3yr trend",zfmt(d.z3)+"σ"],["vs 5yr trend",zfmt(d.z5)+"σ"],["vs 10yr trend",zfmt(d.z10)+"σ"],
-    ["Composite",zfmt(d.composite)+"σ"],
-    ["Index P/E",fmt(d.fundamentals?.pe,1)],["Index P/Rev",fmt(d.fundamentals?.ps,2)],
-  ].map(([l,v])=>`<div class="mstat"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+    ["Current P/E",fmt(v.pe,1)],["P/E vs 3yr",peLine(3)],["P/E vs 5yr",peLine(5)],["P/E vs 10yr",peLine(10)],
+    ["P/Rev",fmt(v.ps,2)],["Basis",v.basis||"—"],["Coverage",v.coverage!=null?v.coverage+"%":"—"],
+  ].map(x=>'<div class="mstat"><div class="l">'+x[0]+'</div><div class="v" style="font-size:14px">'+x[1]+'</div></div>').join("");
+  document.getElementById("mStats").innerHTML=rowsHtml
+   + (v.note?'<div class="note" style="grid-column:1/-1;margin-top:4px">'+v.note+'</div>':"")
+   + (v.error?'<div class="err" style="grid-column:1/-1;margin-top:4px">valuation source error: '+v.error+'</div>':"");
 }
-function closeModal(){ document.getElementById("ov").classList.remove("open"); }
+function closeModal(){document.getElementById("ov").classList.remove("open");}
 let modalRange="3y", modalETF=null;
-const RANGES=[["1y",1],["3y",3],["5y",5],["10y",10]];
-function renderRanges(d){
-  modalETF=d;
-  document.getElementById("mRanges").innerHTML=RANGES.map(([k])=>`<button class="${k===modalRange?'on':''}" onclick="setRange('${k}')">${k.toUpperCase()}</button>`).join("");
-}
-function setRange(k){ modalRange=k; renderRanges(modalETF); drawDetail(modalETF); }
+const RANGES=[["1y",1],["3y",3],["5y",5],["10y",10],["15y",15],["20y",20],["max",99]];
+function renderRanges(){document.getElementById("mRanges").innerHTML=RANGES.map(r=>'<button class="'+(r[0]===modalRange?'on':'')+'" onclick="setRange(\''+r[0]+'\')">'+r[0].toUpperCase()+'</button>').join("");}
+function setRange(k){modalRange=k;renderRanges();drawDetail(modalETF);}
 function drawDetail(d){
-  const yrs={"1y":1,"3y":3,"5y":5,"10y":10}[modalRange];
+  const yrs={"1y":1,"3y":3,"5y":5,"10y":10,"15y":15,"20y":20,"max":99}[modalRange];
   const cut=Date.now()-yrs*365.25*864e5;
   const pts=(d.history||[]).filter(p=>p.t>=cut);
-  if(detChart) detChart.destroy();
-  detChart=new Chart(document.getElementById("detChart"),{
-    type:"line",
+  if(detChart)detChart.destroy();
+  detChart=new Chart(document.getElementById("detChart"),{type:"line",
     data:{labels:pts.map(p=>new Date(p.t).toLocaleDateString("en-AU",{month:"short",year:"2-digit"})),
       datasets:[{data:pts.map(p=>p.c),borderColor:"#4da3ff",backgroundColor:"rgba(77,163,255,.12)",fill:true,pointRadius:0,borderWidth:1.6,tension:.15}]},
-    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+" "+d.currency}}},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)+" "+(d.currency||"")}}},
       scales:{x:{ticks:{color:"#8b9aa8",font:{size:10},maxTicksLimit:8},grid:{display:false}},
-              y:{ticks:{color:"#8b9aa8",font:{size:10}},grid:{color:"#2a3744"}}}}
-  });
+              y:{ticks:{color:"#8b9aa8",font:{size:10}},grid:{color:"#2a3744"}}}}});
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
 function renderMethodology(){
   document.getElementById("methodology").innerHTML=
-  `<b>Methodology &amp; data.</b> Prices are live from Yahoo Finance (ASX, on page load + manual refresh; free-tier data may be delayed). `+
-  `<b>Valuation score</b> is the core signal: for each ETF we fit a log-linear trend to its own price history over 3, 5 and 10 years, then express today's price as a z-score (σ) of the residuals — i.e. how stretched it is vs its <i>own</i> long-run trend, controlling for normal drift. `+
-  `Composite = average of available windows. ≥+1σ → Overvalued, ≥+0.4σ → Mildly rich, ±0.4σ → Fair, ≤−0.4σ → Mildly cheap, ≤−1σ → Undervalued. `+
-  `<b>Index P/E &amp; P/Rev</b> are a current snapshot of each ETF's underlying index (via a liquid US/global proxy ETF) where the free feed exposes them — shown as context, not a historical comparison, since free sources don't provide multi-year index-multiple history. These cells show "—" when unavailable. Not investment advice.`;
+  '<b>How to read the score.</b> Valuation is <b>mean-reverting and multiples-based</b>: we take the index’s <b>current P/E</b> and compare it to that same index’s <b>own average P/E over the last 3, 5 and 10 years</b>. '+
+  'The "P/E vs 3y/5y/10y" columns are <b>z-scores (σ)</b> — how many standard deviations today’s P/E sits above or below that window’s average. <b>Negative = cheaper than its own history (Undervalued/Cheap); positive = richer (Overvalued/Expensive); within ±1σ = Fair.</b> The badge is the average across the three windows. '+
+  '<b>Sources.</b> Broad/regional ETFs use index P/E vs history from worldperatio.com. Sector/thematic ETFs (SEMI, WIRE, BNKS, FANG, FHNG) show a <b>blended P/E reconstructed from holdings</b> ("coverage" = % of index weight with usable data); their multi-year history is built by an offline refresh job and shows "history pending" until first run. <b>Leveraged</b> funds (GGBL, GNDQ) are price-only — multiples don’t apply to geared exposure. '+
+  'Prices, day move and all-time-high drawdown are live from Yahoo Finance (on load + refresh; free data may be delayed). Not investment advice.';
 }
-
 load();
 </script>
 </body>
