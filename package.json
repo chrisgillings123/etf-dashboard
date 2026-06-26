@@ -1,0 +1,8 @@
+{
+  "name": "etf-valuation-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portfolio-manager dashboard tracking 12 ASX ETFs: live price, charts, and an over/fair/under valuation score derived from each ETF's 3/5/10-year price-trend history plus its underlying-index P/E and P/Rev snapshot.",
+  "engines": { "node": ">=18" }
+}
