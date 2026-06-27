@@ -189,16 +189,24 @@ function opts(y,tip){
 }
 
 const COLS=[["ticker","Ticker","l"],["index","Index","l"],["price","Price"],["dayChgPct","Day %"],
-  ["fromAthPct","vs ATH"],["rangePos","52wk"],["pe","P/E"],["z3","P/E vs 3y"],["z5","vs 5y"],["z10","vs 10y"],["ps","P/Rev"],["composite","Score"]];
+  ["fromAthPct","vs ATH"],["regime","Regime"],["rangePos","52wk"],["pe","P/E"],["z3","P/E vs 3y"],["z5","vs 5y"],["z10","vs 10y"],["ps","P/Rev"],["composite","Score"]];
 
 function cellVal(d,k){
   const v=val(d);
   if(k==="ticker")return d.ticker; if(k==="index")return d.index;
   if(k==="group")return GROUP_ORDER.indexOf(d.group);
+  if(k==="regime")return d.fromAthPct==null?-Infinity:Math.abs(d.fromAthPct);
   if(k==="pe")return v.pe; if(k==="ps")return v.ps; if(k==="composite")return v.composite;
   if(k==="z3")return zget(d,3); if(k==="z5")return zget(d,5); if(k==="z10")return zget(d,10);
   return d[k];
 }
+function regimeInfo(fa){ if(fa==null||!isFinite(fa)) return ["—","#8b9aa8"]; const dd=Math.abs(fa);
+  if(dd<5) return ["In range","#2fbf71"]; if(dd<10) return ["Pullback","#23c6c6"];
+  if(dd<15) return ["Correction","#f0a83a"]; if(dd<20) return ["Deep correction","#ff8c42"];
+  return ["Bear market","#ff5c5c"]; }
+function regimeCell(d){ const r=regimeInfo(d.fromAthPct); return '<span style="color:'+r[1]+';font-weight:600;font-size:11.5px">'+r[0]+'</span>'; }
+function zCell(d,n){ const z=zget(d,n); if(z==null) return '—'; const per=val(d).periods||{}; const mu=per[n]?per[n].mu:null;
+  return zf(z)+(mu!=null?' <span class="nm">('+fmt(mu,1)+')</span>':''); }
 function renderTable(){
   const sorted=[...DATA].sort((a,b)=>{
     if(a.error)return 1; if(b.error)return -1;
@@ -212,8 +220,8 @@ function renderTable(){
   let html='<table><thead><tr>'+COLS.map(c=>'<th class="'+(c[2]||'')+'" onclick="setSort(\''+c[0]+'\')">'+c[1]+(sortKey===c[0]?(sortDir<0?' ▼':' ▲'):'')+'</th>').join("")+'</tr></thead><tbody>';
   let grp=null;
   for(const d of sorted){
-    if(sortKey==="group"&&d.group!==grp){grp=d.group;html+='<tr class="grp"><td colspan="12">'+grp+'</td></tr>';}
-    if(d.error){html+='<tr><td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td><td class="l err" colspan="11">data unavailable</td></tr>';continue;}
+    if(sortKey==="group"&&d.group!==grp){grp=d.group;html+='<tr class="grp"><td colspan="13">'+grp+'</td></tr>';}
+    if(d.error){html+='<tr><td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td><td class="l err" colspan="12">data unavailable</td></tr>';continue;}
     const v=val(d), dc=d.dayChgPct, sc=v.score||{label:"—",tone:"na"};
     html+='<tr onclick="openModal(\''+d.ticker+'\')">'+
       '<td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td>'+
@@ -221,11 +229,12 @@ function renderTable(){
       '<td class="num">'+fmt(d.price)+' <span class="nm">'+(d.currency||"")+'</span></td>'+
       '<td class="num '+(dc>=0?'pos':'neg')+'">'+sign(dc)+'%</td>'+
       '<td class="num neg">'+sign(d.fromAthPct)+'%</td>'+
+      '<td>'+regimeCell(d)+'</td>'+
       '<td>'+rangeBar(d)+'</td>'+
       '<td class="num">'+fmt(v.pe,1)+'</td>'+
-      '<td class="num z" style="color:'+zColor(zget(d,3))+'">'+zf(zget(d,3))+'</td>'+
-      '<td class="num z" style="color:'+zColor(zget(d,5))+'">'+zf(zget(d,5))+'</td>'+
-      '<td class="num z" style="color:'+zColor(zget(d,10))+'">'+zf(zget(d,10))+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,3))+'">'+zCell(d,3)+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,5))+'">'+zCell(d,5)+'</td>'+
+      '<td class="num z" style="color:'+zColor(zget(d,10))+'">'+zCell(d,10)+'</td>'+
       '<td class="num">'+fmt(v.ps,2)+'</td>'+
       '<td><span class="badge b-'+sc.tone+'">'+sc.label+'</span></td>'+
     '</tr>';
@@ -247,7 +256,7 @@ function openModal(tkr){
   const per=v.periods||{};
   const peLine=(n)=> per[n]?"avg "+fmt(per[n].mu,1)+" · "+zf(zget(d,n)):"—";
   const rowsHtml=[
-    ["Price",fmt(d.price)+" "+(d.currency||"")],["Day",sign(d.dayChgPct)+"%"],["vs ATH",sign(d.fromAthPct)+"%"],
+    ["Price",fmt(d.price)+" "+(d.currency||"")],["Day",sign(d.dayChgPct)+"%"],["vs ATH",sign(d.fromAthPct)+"%"],["Regime",regimeInfo(d.fromAthPct)[0]],
     ["52wk High",fmt(d.week52High)],["52wk Low",fmt(d.week52Low)],
     ["Current P/E",fmt(v.pe,1)],["P/E vs 3yr",peLine(3)],["P/E vs 5yr",peLine(5)],["P/E vs 10yr",peLine(10)],
     ["P/Rev",fmt(v.ps,2)],["Basis",v.basis||"—"],["Coverage",v.coverage!=null?v.coverage+"%":"—"],
@@ -278,9 +287,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 function renderMethodology(){
   document.getElementById("methodology").innerHTML=
   '<b>How to read the score.</b> Valuation is <b>mean-reverting and multiples-based</b>: we take the index’s <b>current P/E</b> and compare it to that same index’s <b>own average P/E over the last 3, 5 and 10 years</b>. '+
-  'The "P/E vs 3y/5y/10y" columns are <b>z-scores (σ)</b> — how many standard deviations today’s P/E sits above or below that window’s average. <b>Negative = cheaper than its own history (Undervalued/Cheap); positive = richer (Overvalued/Expensive); within ±1σ = Fair.</b> The badge is the average across the three windows. '+
-  '<b>Sources.</b> Broad/regional ETFs use index P/E vs history from worldperatio.com. Sector/thematic ETFs (SEMI, WIRE, BNKS, FANG, FHNG) show a <b>blended P/E reconstructed from holdings</b> ("coverage" = % of index weight with usable data); their multi-year history is built by an offline refresh job and shows "history pending" until first run. <b>Leveraged</b> funds (GGBL, GNDQ) are price-only — multiples don’t apply to geared exposure. '+
-  'Prices, day move and all-time-high drawdown are live from Yahoo Finance (on load + refresh; free data may be delayed). Not investment advice.';
+  'The "P/E vs 3y/5y/10y" columns are <b>z-scores (σ)</b> — how many standard deviations today’s P/E sits above or below that window’s average, with the window’s <b>average P/E shown in brackets</b>. <b>Negative = cheaper than its own history; positive = richer; within ±1σ = Fair.</b> The badge is the average across the three windows. '+
+  '<b>Regime</b> flags the drawdown from the all-time high: In range (&lt;5%), Pullback (5–10%), Correction (10–15%), Deep correction (15–20%), Bear market (&gt;20%). '+
+  '<b>Sources.</b> Broad/regional ETFs use index P/E vs history from worldperatio.com. Sector/thematic and leveraged ETFs are price-only. Prices, day move and all-time-high drawdown are live from Yahoo Finance (on load + refresh; may be delayed). Not investment advice.';
 }
 load();
 </script>
