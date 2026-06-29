@@ -120,7 +120,13 @@ function summarise(monthly, recent){
 export default async function handler(req, res){
   res.setHeader("Cache-Control","s-maxage=900, stale-while-revalidate=3600");
   try {
-    const rows = await Promise.allSettled(ETFS.map(async (e) => {
+    const extraRaw = (req.query && req.query.extra) ? String(req.query.extra) : "";
+    const existing = new Set(ETFS.map(e=>e.ticker.toUpperCase()));
+    const customs = extraRaw.split(",").map(s=>s.trim().toUpperCase().replace(/[^A-Z0-9.^-]/g,"")).filter(Boolean)
+      .filter((s,i,a)=>a.indexOf(s)===i && !existing.has(s)).slice(0,40)
+      .map(t=>({ ticker:t, name:"Added ticker", index:"—", group:"Watchlist", tier:9 }));
+    const ALL = ETFS.concat(customs);
+    const rows = await Promise.allSettled(ALL.map(async (e) => {
       const [monthly, recent] = await Promise.all([
         fetchChart(e.ticker, "max", "1mo"),
         fetchChart(e.ticker, "5d", "1d"),
@@ -136,6 +142,9 @@ export default async function handler(req, res){
         } catch (err){
           base.valuation = { basis:"P/E vs own history", error:String(err.message), score:band(null) };
         }
+      } else if (e.tier===9){
+        base.name = (recent.meta && (recent.meta.shortName||recent.meta.longName)) || (monthly.meta && (monthly.meta.shortName||monthly.meta.longName)) || e.ticker;
+        base.valuation = { basis:"Watchlist — price only", score:{ label:"n/a", tone:"na" } };
       } else if (e.tier===2){
         base.valuation = { basis:"Sector/thematic — price only (no reliable free valuation)", score:{ label:"n/a", tone:"na" } };
       } else {
@@ -144,7 +153,7 @@ export default async function handler(req, res){
       return base;
     }));
 
-    const etfs = rows.map((r,i)=> r.status==="fulfilled" ? r.value : Object.assign({}, ETFS[i], { error:String((r.reason && r.reason.message) || r.reason) }));
+    const etfs = rows.map((r,i)=> r.status==="fulfilled" ? r.value : Object.assign({}, ALL[i], { error:String((r.reason && r.reason.message) || r.reason) }));
     res.status(200).json({ asOf:Date.now(), etfs });
   } catch (err){
     res.status(500).json({ error:String((err && err.message) || err) });
