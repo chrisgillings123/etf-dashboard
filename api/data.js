@@ -6,9 +6,10 @@
 //   Source: worldperatio.com (P/E + 3/5/10/20-yr mean & sigma per index).
 // Sector/thematic ETFs: price-only (free data can't value these baskets reliably).
 // Leveraged ETFs: price-only (gearing distorts multiples).
-// Watchlist (user-added) tickers: price + current P/E (Finnhub, falls back to Yahoo EPS).
 //
 // Prices, day move, 52-wk range, all-time-high drawdown and charts: Yahoo Finance.
+//   - long monthly series (range=max&interval=1mo) -> charts + all-time high
+//   - short daily series  (range=5d&interval=1d)   -> accurate latest price + day move
 
 const ETFS = [
   // Tier 1 — worldperatio valuation
@@ -43,7 +44,8 @@ async function getText(url){
   return r.text();
 }
 
-// Single-stock trailing EPS via Yahoo fundamentals-timeseries (fallback if no key).
+// Single-stock trailing EPS via the fundamentals-timeseries endpoint (usually
+// reachable from cloud servers, unlike the quote API). P/E is then price / EPS.
 async function fetchEps(symbol){
   try {
     const p2 = Math.floor(Date.now()/1000), p1 = p2 - 3*365*24*3600;
@@ -59,16 +61,55 @@ async function fetchEps(symbol){
   } catch (e) { return null; }
 }
 
-// Finnhub stock P/E (reliable from cloud servers; needs free FINNHUB_API_KEY env var).
-async function fetchPEfinnhub(symbol){
+// Finnhub basic financials (needs free FINNHUB_API_KEY). Returns current P/E and a
+// historical valuation series so US watchlist stocks can be scored vs their own history.
+async function fetchFinnhubMetric(symbol){
   const key = process.env.FINNHUB_API_KEY;
   if (!key) return null;
-  try {
-    const j = await getJson("https://finnhub.io/api/v1/stock/metric?symbol=" + encodeURIComponent(symbol) + "&metric=all&token=" + encodeURIComponent(key));
-    const m = (j && j.metric) || {};
-    const pe = (m.peTTM!=null) ? m.peTTM : (m.peBasicExclExtraTTM!=null ? m.peBasicExclExtraTTM : (m.peNormalizedAnnual!=null ? m.peNormalizedAnnual : null));
-    return (pe!=null && isFinite(pe)) ? pe : null;
-  } catch (e) { return null; }
+  try { return await getJson("https://finnhub.io/api/v1/stock/metric?symbol=" + encodeURIComponent(symbol) + "&metric=all&token=" + encodeURIComponent(key)); }
+  catch (e) { return null; }
+}
+function finnhubPE(data){
+  const m = (data && data.metric) || {};
+  const pe = (m.peTTM!=null) ? m.peTTM : (m.peBasicExclExtraTTM!=null ? m.peBasicExclExtraTTM : (m.peNormalizedAnnual!=null ? m.peNormalizedAnnual : null));
+  return (pe!=null && isFinite(pe)) ? pe : null;
+}
+function rollingTTM(pts){
+  if (pts.length<2) return pts.map(p=>({t:p.t,eps:p.v}));
+  const gaps=[]; for (let i=1;i<pts.length;i++) gaps.push(pts[i].t-pts[i-1].t);
+  gaps.sort((a,b)=>a-b); const med=gaps[Math.floor(gaps.length/2)];
+  if (med > 200*864e5) return pts.map(p=>({t:p.t,eps:p.v}));        // annual-ish: already TTM
+  const out=[]; for (let i=3;i<pts.length;i++) out.push({ t:pts[i].t, eps:pts[i].v+pts[i-1].v+pts[i-2].v+pts[i-3].v });
+  return out;                                                       // quarterly: rolling 4
+}
+// {3,5,10}:{mu,sigma} from a US stock's own P/E history (Finnhub series + Yahoo price)
+function buildStockPeriods(data, monthlyPoints){
+  const series = data && data.series; if (!series) return null;
+  const ann = series.annual || {}, qtr = series.quarterly || {};
+  let seq = [];
+  const directPE = (Array.isArray(ann.pe) && ann.pe) || (Array.isArray(qtr.pe) && qtr.pe) || null;
+  if (directPE){
+    seq = directPE.map(x=>({ t:new Date(x.period).getTime(), pe:x.v })).filter(x=>isFinite(x.pe)&&x.pe>0);
+  } else if (monthlyPoints && monthlyPoints.length){
+    const epsRaw = (Array.isArray(qtr.eps)&&qtr.eps) || (Array.isArray(qtr.epsBasicExclExtraItems)&&qtr.epsBasicExclExtraItems)
+                || (Array.isArray(ann.eps)&&ann.eps) || (Array.isArray(ann.epsBasicExclExtraItems)&&ann.epsBasicExclExtraItems) || null;
+    if (epsRaw){
+      const pts = epsRaw.map(x=>({ t:new Date(x.period).getTime(), v:x.v })).filter(x=>isFinite(x.v)).sort((a,b)=>a.t-b.t);
+      const ttm = rollingTTM(pts);
+      const priceAt=(t)=>{ let v=null; for (const p of monthlyPoints){ if (p.t<=t) v=p.c; else break; } return v; };
+      seq = ttm.map(e=>{ const pr=priceAt(e.t); return (pr&&e.eps>0)?{ t:e.t, pe:pr/e.eps }:null; }).filter(Boolean);
+    }
+  }
+  if (seq.length<3) return null;
+  const now=Date.now(), out={};
+  for (const yrs of [3,5,10]){
+    const cut=now-yrs*365.25*864e5;
+    const vals=seq.filter(x=>x.t>=cut).map(x=>x.pe).filter(v=>v>0&&v<200);
+    if (vals.length>=2){ const mu=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-mu)*(b-mu),0)/vals.length);
+      out[yrs]={ mu:+mu.toFixed(1), sigma:+(sd||0.1).toFixed(2) }; }
+  }
+  return Object.keys(out).length ? out : null;
 }
 
 async function fetchChart(symbol, range, interval){
@@ -170,9 +211,14 @@ export default async function handler(req, res){
         }
       } else if (e.tier===9){
         base.name = (recent.meta && (recent.meta.shortName||recent.meta.longName)) || (monthly.meta && (monthly.meta.shortName||monthly.meta.longName)) || e.ticker;
-        let pe = await fetchPEfinnhub(e.ticker);
+        const fdata = await fetchFinnhubMetric(e.ticker);
+        let pe = finnhubPE(fdata);
         if (pe==null) { try { const eps = await fetchEps(e.ticker); if (eps!=null && eps>0 && base.price!=null) pe = base.price/eps; } catch (e2) {} }
-        base.valuation = { basis:"Watchlist — current P/E", pe:pe, score:{ label:"n/a", tone:"na" } };
+        const v = { basis:"Watchlist — P/E vs own history", pe:pe, score:{ label:"n/a", tone:"na" } };
+        const periods = buildStockPeriods(fdata, monthly.points);
+        if (periods && pe!=null){ const sc = scoreFromPeriods(pe, periods); Object.assign(v, { periods:periods, zs:sc.zs, composite:sc.composite, score:sc.score }); }
+        v.seriesKeys = (fdata && fdata.series && fdata.series.annual) ? Object.keys(fdata.series.annual) : (fdata && fdata.series ? Object.keys(fdata.series) : "no-series");
+        base.valuation = v;
       } else if (e.tier===2){
         base.valuation = { basis:"Sector/thematic — price only (no reliable free valuation)", score:{ label:"n/a", tone:"na" } };
       } else {
