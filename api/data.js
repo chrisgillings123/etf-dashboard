@@ -6,7 +6,7 @@
 //   Source: worldperatio.com (P/E + 3/5/10/20-yr mean & sigma per index).
 // Sector/thematic ETFs: price-only (free data can't value these baskets reliably).
 // Leveraged ETFs: price-only (gearing distorts multiples).
-// Watchlist (user-added) tickers: price + current P/E (price / trailing EPS).
+// Watchlist (user-added) tickers: price + current P/E (Finnhub, falls back to Yahoo EPS).
 //
 // Prices, day move, 52-wk range, all-time-high drawdown and charts: Yahoo Finance.
 
@@ -43,8 +43,7 @@ async function getText(url){
   return r.text();
 }
 
-// Single-stock trailing EPS via the fundamentals-timeseries endpoint (usually
-// reachable from cloud servers, unlike the quote API). P/E is then price / EPS.
+// Single-stock trailing EPS via Yahoo fundamentals-timeseries (fallback if no key).
 async function fetchEps(symbol){
   try {
     const p2 = Math.floor(Date.now()/1000), p1 = p2 - 3*365*24*3600;
@@ -57,6 +56,18 @@ async function fetchEps(symbol){
         if (v!=null && d){ const t=new Date(d).getTime(); if (!best || t>best.t) best={t,v}; } } } return best?best.v:null; };
     const eps = pick("trailingDilutedEPS");
     return eps!=null ? eps : pick("annualDilutedEPS");
+  } catch (e) { return null; }
+}
+
+// Finnhub stock P/E (reliable from cloud servers; needs free FINNHUB_API_KEY env var).
+async function fetchPEfinnhub(symbol){
+  const key = process.env.FINNHUB_API_KEY;
+  if (!key) return null;
+  try {
+    const j = await getJson("https://finnhub.io/api/v1/stock/metric?symbol=" + encodeURIComponent(symbol) + "&metric=all&token=" + encodeURIComponent(key));
+    const m = (j && j.metric) || {};
+    const pe = (m.peTTM!=null) ? m.peTTM : (m.peBasicExclExtraTTM!=null ? m.peBasicExclExtraTTM : (m.peNormalizedAnnual!=null ? m.peNormalizedAnnual : null));
+    return (pe!=null && isFinite(pe)) ? pe : null;
   } catch (e) { return null; }
 }
 
@@ -159,9 +170,9 @@ export default async function handler(req, res){
         }
       } else if (e.tier===9){
         base.name = (recent.meta && (recent.meta.shortName||recent.meta.longName)) || (monthly.meta && (monthly.meta.shortName||monthly.meta.longName)) || e.ticker;
-        let pe = null;
-        try { const eps = await fetchEps(e.ticker); if (eps!=null && eps>0 && base.price!=null) pe = base.price/eps; } catch (e2) {}
-        base.valuation = { basis:"Watchlist — P/E (price ÷ trailing EPS)", pe:pe, score:{ label:"n/a", tone:"na" } };
+        let pe = await fetchPEfinnhub(e.ticker);
+        if (pe==null) { try { const eps = await fetchEps(e.ticker); if (eps!=null && eps>0 && base.price!=null) pe = base.price/eps; } catch (e2) {} }
+        base.valuation = { basis:"Watchlist — current P/E", pe:pe, score:{ label:"n/a", tone:"na" } };
       } else if (e.tier===2){
         base.valuation = { basis:"Sector/thematic — price only (no reliable free valuation)", score:{ label:"n/a", tone:"na" } };
       } else {
