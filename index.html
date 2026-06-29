@@ -96,7 +96,13 @@
   </div>
 
   <div class="card">
-    <h2>Holdings &mdash; click a row for price history &amp; detail</h2>
+    <h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>Holdings &mdash; click a row for detail</span>
+      <span style="text-transform:none;letter-spacing:0;font-weight:400">
+        <input id="addTk" placeholder="Add ticker (AAPL, BHP.AX, 7203.T)" onkeydown="if(event.key==='Enter')addTicker()" style="background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 10px;font-size:13px;width:220px" />
+        <button onclick="addTicker()">+ Add</button>
+      </span>
+    </h2>
     <div id="tableWrap"><div class="loading"><span class="spin"></span> Loading live data&hellip;</div></div>
   </div>
 
@@ -122,13 +128,14 @@
 const fmt=(n,d=2)=> n==null||!isFinite(n)?"—":Number(n).toLocaleString("en-AU",{minimumFractionDigits:d,maximumFractionDigits:d});
 const sign=(n,d=2)=> n==null||!isFinite(n)?"—":(n>=0?"+":"")+fmt(n,d);
 const zf=z=> z==null||!isFinite(z)?"—":(z>=0?"+":"")+z.toFixed(2)+"σ";
-const GROUP_ORDER=["Broad / Developed","Regional / EM","Thematic / Sector","ESG / Climate","Leveraged"];
+const GROUP_ORDER=["Watchlist","Broad / Developed","Regional / EM","Thematic / Sector","ESG / Climate","Leveraged"];
 let DATA=[], sortKey="group", sortDir=1, valChart, athChart, detChart;
 
 async function load(){
   document.getElementById("refresh").innerHTML='<span class="spin"></span> Loading';
   try{
-    const r=await fetch("/api/data",{cache:"no-store"});
+    const extra=getWatch();
+    const r=await fetch("/api/data"+(extra.length?("?extra="+encodeURIComponent(extra.join(","))):""),{cache:"no-store"});
     const j=await r.json();
     if(j.error) throw new Error(j.error);
     DATA=j.etfs;
@@ -140,6 +147,10 @@ async function load(){
   document.getElementById("refresh").innerHTML="↻ Refresh";
 }
 function val(d){ return d.valuation||{}; }
+function getWatch(){ try{return JSON.parse(localStorage.getItem("etf_watchlist")||"[]");}catch(e){return [];} }
+function setWatch(a){ try{localStorage.setItem("etf_watchlist",JSON.stringify(a));}catch(e){} }
+function addTicker(){ const el=document.getElementById("addTk"); let t=(el.value||"").trim().toUpperCase().replace(/[^A-Z0-9.^-]/g,""); if(!t)return; const w=getWatch(); if(!w.includes(t))w.push(t); setWatch(w); el.value=""; load(); }
+function removeTicker(ev,sym){ ev.stopPropagation(); setWatch(getWatch().filter(x=>x!==sym)); load(); }
 function zget(d,n){ const v=val(d); return v.zs?v.zs[n]:null; }
 
 function render(){ renderKpis(); renderCharts(); renderTable(); renderMethodology(); }
@@ -221,10 +232,10 @@ function renderTable(){
   let grp=null;
   for(const d of sorted){
     if(sortKey==="group"&&d.group!==grp){grp=d.group;html+='<tr class="grp"><td colspan="13">'+grp+'</td></tr>';}
-    if(d.error){html+='<tr><td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td><td class="l err" colspan="12">data unavailable</td></tr>';continue;}
+    if(d.error){html+='<tr><td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span>'+(d.group==="Watchlist"?' <span title="remove" onclick="removeTicker(event,\''+d.ticker+'\')" style="cursor:pointer;color:var(--mut);font-weight:700">✕</span>':'')+'<div class="nm">'+(d.name||"")+'</div></td><td class="l err" colspan="12">data unavailable — check ticker</td></tr>';continue;}
     const v=val(d), dc=d.dayChgPct, sc=v.score||{label:"—",tone:"na"};
     html+='<tr onclick="openModal(\''+d.ticker+'\')">'+
-      '<td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span><div class="nm">'+d.name+'</div></td>'+
+      '<td class="l"><span class="tkr">'+d.ticker.replace(".AX","")+'</span>'+(d.group==="Watchlist"?' <span title="remove" onclick="removeTicker(event,\''+d.ticker+'\')" style="cursor:pointer;color:var(--mut);font-weight:700">✕</span>':'')+'<div class="nm">'+d.name+'</div></td>'+
       '<td class="l nm">'+d.index+'</td>'+
       '<td class="num">'+fmt(d.price)+' <span class="nm">'+(d.currency||"")+'</span></td>'+
       '<td class="num '+(dc>=0?'pos':'neg')+'">'+sign(dc)+'%</td>'+
@@ -286,10 +297,12 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
 function renderMethodology(){
   document.getElementById("methodology").innerHTML=
-  '<b>How to read the score.</b> Valuation is <b>mean-reverting and multiples-based</b>: we take the index’s <b>current P/E</b> and compare it to that same index’s <b>own average P/E over the last 3, 5 and 10 years</b>. '+
-  'The "P/E vs 3y/5y/10y" columns are <b>z-scores (σ)</b> — how many standard deviations today’s P/E sits above or below that window’s average, with the window’s <b>average P/E shown in brackets</b>. <b>Negative = cheaper than its own history; positive = richer; within ±1σ = Fair.</b> The badge is the average across the three windows. '+
-  '<b>Regime</b> flags the drawdown from the all-time high: In range (&lt;5%), Pullback (5–10%), Correction (10–15%), Deep correction (15–20%), Bear market (&gt;20%). '+
-  '<b>Sources.</b> Broad/regional ETFs use index P/E vs history from worldperatio.com. Sector/thematic and leveraged ETFs are price-only. Prices, day move and all-time-high drawdown are live from Yahoo Finance (on load + refresh; may be delayed). Not investment advice.';
+  '<b>How to read the score.</b> Valuation is <b>mean-reverting and multiples-based</b>: the index\'s <b>current P/E</b> vs its <b>own average P/E over the last 3, 5 and 10 years</b>. '+
+  'The "P/E vs 3y/5y/10y" columns are <b>z-scores (σ)</b> — standard deviations above/below that window\'s average, with the window\'s <b>average P/E in brackets</b>. <b>Negative = cheaper than its own history; positive = richer; within ±1σ = Fair.</b> The badge is the average of the three windows. '+
+  '<b>Regime</b> = drawdown from all-time high: In range (&lt;5%), Pullback (5–10%), Correction (10–15%), Deep correction (15–20%), Bear market (&gt;20%). '+
+  '<b>Sources.</b> Broad/regional ETFs use index P/E vs history from worldperatio.com; sector/thematic and leveraged ETFs are price-only. '+
+  'Use <b>+ Add</b> to track any Yahoo ticker (e.g. AAPL, BHP.AX, 7203.T) as a price-only Watchlist row (saved in your browser), and the ✕ to remove. '+
+  'Prices, day move and all-time-high drawdown are live from Yahoo Finance (on load + refresh; may be delayed). Not investment advice.';
 }
 load();
 </script>
