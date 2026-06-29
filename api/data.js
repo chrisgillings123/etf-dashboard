@@ -6,10 +6,9 @@
 //   Source: worldperatio.com (P/E + 3/5/10/20-yr mean & sigma per index).
 // Sector/thematic ETFs: price-only (free data can't value these baskets reliably).
 // Leveraged ETFs: price-only (gearing distorts multiples).
+// Watchlist (user-added) tickers: price + current P/E / P/Rev (no history score).
 //
 // Prices, day move, 52-wk range, all-time-high drawdown and charts: Yahoo Finance.
-//   - long monthly series (range=max&interval=1mo) -> charts + all-time high
-//   - short daily series  (range=5d&interval=1d)   -> accurate latest price + day move
 
 const ETFS = [
   // Tier 1 — worldperatio valuation
@@ -42,6 +41,34 @@ async function getText(url){
   const r = await fetch(url, { headers:{ "User-Agent":UA, "Accept":"text/html" } });
   if (!r.ok) throw new Error("HTTP " + r.status);
   return r.text();
+}
+
+// Yahoo fundamentals (P/E, P/S) needs a cookie+crumb; often works for liquid names.
+async function getCrumb(){
+  const r1 = await fetch("https://fc.yahoo.com", { headers:{ "User-Agent":UA } });
+  const sc = (typeof r1.headers.getSetCookie==="function" ? r1.headers.getSetCookie() : [r1.headers.get("set-cookie")]).filter(Boolean);
+  const cookie = sc.map(x=>String(x).split(";")[0]).join("; ");
+  const cr = await fetch("https://query1.finance.yahoo.com/v1/test/getcrumb", { headers:{ "User-Agent":UA, "Cookie":cookie } });
+  const crumb = (await cr.text()).trim();
+  return { cookie, crumb };
+}
+async function fetchQuotes(symbols){
+  const out = {};
+  if (!symbols.length) return out;
+  try {
+    const { cookie, crumb } = await getCrumb();
+    const url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.map(encodeURIComponent).join(",") + (crumb?("&crumb="+encodeURIComponent(crumb)):"");
+    const r = await fetch(url, { headers:{ "User-Agent":UA, "Cookie":cookie, "Accept":"application/json" } });
+    if (!r.ok) throw new Error("HTTP "+r.status);
+    const j = await r.json();
+    for (const q of (j && j.quoteResponse && j.quoteResponse.result) || []){
+      out[q.symbol] = {
+        pe: isFinite(q.trailingPE) ? q.trailingPE : null,
+        ps: isFinite(q.priceToSalesTrailing12Months) ? q.priceToSalesTrailing12Months : (isFinite(q.priceToSales) ? q.priceToSales : null),
+      };
+    }
+  } catch (e) { /* blocked -> leave empty */ }
+  return out;
 }
 
 async function fetchChart(symbol, range, interval){
@@ -102,7 +129,6 @@ function summarise(monthly, recent){
   const mc = monthly.points;
   const price = (recent.meta.regularMarketPrice!=null) ? recent.meta.regularMarketPrice
               : (rc.length ? rc[rc.length-1].c : (mc.length ? mc[mc.length-1].c : null));
-  // accurate day move from the last two distinct daily closes
   let prev = null;
   if (rc.length>=2) prev = rc[rc.length-2].c;
   else if (recent.meta.chartPreviousClose!=null) prev = recent.meta.chartPreviousClose;
@@ -126,6 +152,7 @@ export default async function handler(req, res){
       .filter((s,i,a)=>a.indexOf(s)===i && !existing.has(s)).slice(0,40)
       .map(t=>({ ticker:t, name:"Added ticker", index:"—", group:"Watchlist", tier:9 }));
     const ALL = ETFS.concat(customs);
+    const wq = customs.length ? await fetchQuotes(customs.map(c=>c.ticker)) : {};
     const rows = await Promise.allSettled(ALL.map(async (e) => {
       const [monthly, recent] = await Promise.all([
         fetchChart(e.ticker, "max", "1mo"),
@@ -144,7 +171,8 @@ export default async function handler(req, res){
         }
       } else if (e.tier===9){
         base.name = (recent.meta && (recent.meta.shortName||recent.meta.longName)) || (monthly.meta && (monthly.meta.shortName||monthly.meta.longName)) || e.ticker;
-        base.valuation = { basis:"Watchlist — price only", score:{ label:"n/a", tone:"na" } };
+        const q = wq[e.ticker] || wq[e.ticker.toUpperCase()] || {};
+        base.valuation = { basis:"Watchlist — current multiples (no history score)", pe:(q.pe!=null?q.pe:null), ps:(q.ps!=null?q.ps:null), score:{ label:"n/a", tone:"na" } };
       } else if (e.tier===2){
         base.valuation = { basis:"Sector/thematic — price only (no reliable free valuation)", score:{ label:"n/a", tone:"na" } };
       } else {
